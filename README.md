@@ -5,7 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
-A generic, use-case agnostic **A2A (Agent-to-Agent) protocol** wrapper for [OpenCode](https://opencode.ai). Drop a JSON config file in, get a fully spec-compliant A2A server out.
+[OpenCode](https://opencode.ai) is a production-grade agent runtime that supports Anthropic, OpenAI, GitHub Copilot, and more. It already handles multi-step planning, MCP tool execution, and streaming across any provider you configure.
+
+**a2a-opencode** exposes it as a standalone, interoperable agent via the [A2A protocol](https://github.com/google-deepmind/a2a). Drop a JSON config file in, get a fully spec-compliant A2A server out. Any orchestrator that speaks A2A can discover and call it — swap the LLM provider in one config line without changing orchestration code.
+
+> **The pattern:** MCP is the vertical rail — how agents access tools. A2A is the horizontal rail — how agents talk to each other. This library adds the horizontal rail to OpenCode, making it vendor-neutral by default.
 
 **Features:**
 - Full [A2A v0.3.0](https://github.com/google-deepmind/a2a) protocol — Agent Card, JSON-RPC, REST, SSE streaming
@@ -18,6 +22,30 @@ A generic, use-case agnostic **A2A (Agent-to-Agent) protocol** wrapper for [Open
 - Docker-ready with corporate proxy CA support
 - TypeScript source with full type declarations
 - Postman collection included for API exploration
+
+## Why not just integrate the LLM provider API directly?
+
+Direct provider integrations work — but they create vendor lock-in at the integration layer. Switching from Claude to GPT-4.1 means rewriting SDK calls. Adding a second agent type means a second bespoke integration.
+
+With the A2A protocol surface:
+- Your orchestrator speaks one interface regardless of which provider is behind it
+- Switch providers by changing **one line** in `config.json` — orchestration stays the same
+- Run multiple specialized agents (different providers, different system prompts) behind a single protocol interface
+- Any A2A-compatible system can discover and call your agent via Agent Card
+
+## Works with agent frameworks
+
+This library complements — not replaces — frameworks like LangGraph, Google ADK, Microsoft Agent Framework, and CrewAI. Use those frameworks for orchestration, state, and memory control. Use a2a-opencode as the execution node they call.
+
+```
+LangGraph / ADK / Microsoft Agent Framework
+        (state, memory, flow control)
+                    ↓
+              A2A Protocol
+                    ↓
+             a2a-opencode
+      (OpenCode + any LLM provider)
+```
 
 ## Quick Start
 
