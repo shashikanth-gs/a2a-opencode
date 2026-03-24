@@ -68,6 +68,18 @@ npx a2a-opencode --config agents/example/config.json
 
 > **Prerequisites:** [OpenCode](https://opencode.ai) installed and running (`opencode serve`). The wrapper connects to it on `http://localhost:4096` by default.
 
+## Tested With
+
+| Component | Version |
+|---|---|
+| OpenCode server | **v1.3.0** |
+| `@opencode-ai/sdk` | **1.3.0** |
+| `@a2a-js/sdk` | **0.3.13** |
+| A2A protocol | **v0.3.0** |
+| Node.js | **>=18** |
+
+> Other versions may work, but the above combination is what has been tested end-to-end.
+
 ## Architecture
 
 ```
@@ -77,7 +89,7 @@ A2A Client (Orchestrator / Inspector / curl)
   ▼
 Express Server  (a2a-opencode)
   │  ├─ /.well-known/agent-card.json  → Agent Card
-  │  ├─ /a2a/jsonrpc                  → JSON-RPC  (tasks/send, tasks/sendSubscribe, …)
+  │  ├─ /a2a/jsonrpc                  → JSON-RPC  (message/send, message/sendSubscribe, …)
   │  ├─ /a2a/rest                     → REST handler
   │  ├─ /context                      → Read context.md
   │  ├─ /context/build                → Trigger context discovery
@@ -201,7 +213,7 @@ Create a `config.json` (see `agents/example/config.json` for the fully annotated
   },
   "mcp": {
     "my-tools": {
-      "type": "http",
+      "type": "remote",
       "url": "http://localhost:8002/mcp"
     }
   }
@@ -216,8 +228,9 @@ Create a `config.json` (see `agents/example/config.json` for the fully annotated
 | `HOSTNAME` | Bind address | `0.0.0.0` |
 | `ADVERTISE_HOST` | Hostname in agent card URLs | `localhost` |
 | `OPENCODE_URL` | OpenCode server URL | `http://localhost:4096` |
-| `OPENCODE_MODEL` | LLM model (`provider/model`) | _(OpenCode default)_ |
-| `WORKSPACE_DIR` | Project directory for OpenCode | _(empty)_ |
+| `MODEL` | LLM model (`provider/model`) | _(OpenCode default)_ |
+| `OPENCODE_AGENT` | OpenCode agent preset | _(from config)_ |
+| `DIRECTORY` | Project directory for OpenCode | _(empty)_ |
 | `AUTO_APPROVE` | Auto-approve tool permissions | `true` |
 | `AUTO_ANSWER` | Auto-answer questions | `true` |
 | `STREAM_ARTIFACTS` | Stream chunks in real time | `false` |
@@ -258,38 +271,43 @@ $EDITOR agents/my-agent/config.json
 
 ## MCP Tool Servers
 
-### HTTP / SSE server
-
-```json
-"mcp": {
-  "my-tools": {
-    "type": "http",
-    "url": "http://localhost:8002/mcp"
-  }
-}
-```
-
-### stdio server (child process)
+### Local server (stdio child process)
 
 ```json
 "mcp": {
   "filesystem": {
-    "type": "stdio",
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/workspace"]
+    "type": "local",
+    "command": ["npx", "@modelcontextprotocol/server-filesystem", "/path/to/workspace"],
+    "enabled": true,
+    "timeout": 10000
   }
 }
 ```
 
-### OAuth server
+### Remote server (HTTP / SSE)
+
+```json
+"mcp": {
+  "my-tools": {
+    "type": "remote",
+    "url": "http://localhost:8002/mcp",
+    "enabled": true
+  }
+}
+```
+
+### Remote server with OAuth
 
 ```json
 "mcp": {
   "my-oauth-tools": {
-    "type": "oauth",
+    "type": "remote",
     "url": "https://api.example.com/mcp",
-    "clientId": "...",
-    "clientSecret": "..."
+    "oauth": {
+      "clientId": "...",
+      "clientSecret": "...",
+      "scope": "read write"
+    }
   }
 }
 ```
@@ -327,7 +345,7 @@ Implements **A2A v0.3.0**:
 | Endpoint | Description |
 |---|---|
 | `GET /.well-known/agent-card.json` | Agent identity and capabilities |
-| `POST /a2a/jsonrpc` | JSON-RPC: `tasks/send`, `tasks/sendSubscribe`, `tasks/get`, `tasks/cancel` |
+| `POST /a2a/jsonrpc` | JSON-RPC: `message/send`, `message/sendSubscribe` |
 | `POST /a2a/rest` | REST equivalent |
 | `GET /health` | Health check |
 | `POST /context/build` | Trigger context discovery |

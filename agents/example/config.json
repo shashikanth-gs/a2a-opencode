@@ -62,9 +62,10 @@
       "                  preventing tool/internals disclosure. Recommended for production.",
       "  'append'      — Your prompt is injected as-is before the first user message."
     ],
-    "baseUrl": "http://localhost:4096",
-    "projectDirectory": "",
-    "model": "github-copilot/gpt-4o",
+    "baseUrl": "http://localhost:4097",
+    "projectDirectory": "/Users/gss/Views/open-code-projects/mcp-test",
+    "model": "github-copilot/claude-sonnet-4.5",
+    "agent": "general",
     "systemPromptMode": "replace",
     "systemPrompt": "You are a helpful assistant. Replace this system prompt with instructions that define your agent's role, persona, and expected behaviour."
   },
@@ -98,6 +99,27 @@
 
   "logging": {
     "$comment": "level — One of: 'debug' | 'info' | 'warn' | 'error'. Use 'debug' during development.",
-    "level": "info"
+    "level": "debug"
+  },
+
+  "mcp": {
+    "everything": {
+      "type": "local",
+      "command": ["npx", "@modelcontextprotocol/server-everything"],
+      "enabled": true,
+      "timeout": 10000
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
+      "enabled": true,
+      "timeout": 30000
+    },
+    "tavily": {
+      "type": "remote",
+      "url": "https://mcp.tavily.com/mcp/?tavilyApiKey=YOUR_API_KEY_HERE",
+      "enabled": true,
+      "timeout": 30000
+    }
   }
 }

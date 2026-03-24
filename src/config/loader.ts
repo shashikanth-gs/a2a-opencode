@@ -86,7 +86,7 @@ export function loadEnvOverrides(): Partial<AgentConfig> {
   const baseUrl = process.env["OPENCODE_URL"];
   const directory = process.env["DIRECTORY"];
   const model = process.env["MODEL"];
-  const agent = process.env["AGENT"];
+  const agent = process.env["OPENCODE_AGENT"];
   if (baseUrl || directory || model || agent) {
     cfg.opencode = {};
     if (baseUrl) cfg.opencode.baseUrl = baseUrl;
